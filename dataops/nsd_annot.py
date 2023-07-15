@@ -50,7 +50,10 @@ class NSD_ann():
 
         # in colab, install modules and mount gdrive
         if platform == 'colab':
-            eval('!pip install pycocotools')
+            # TODO: supposedly this is forbidden due to safety reasons.
+            # If no solution, pycocotools need to be installed manually or
+            # through requirements, which is probably the correct solution
+            # eval('!pip install pycocotools')
             from pycocotools.coco import COCO  # noqa
             from google.colab import drive  # noqa
             drive.mount('/content/drive/', force_remount=True)
