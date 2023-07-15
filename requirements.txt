@@ -1,0 +1,5 @@
+
+numpy
+pandas
+matplotlib
+pycocotools==2.0.6
