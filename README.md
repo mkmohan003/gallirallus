@@ -2,7 +2,7 @@
 
 - [fMRI](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC162295/) detects the blood oxygen level–dependent (BOLD) changes in the MRI signal that arise when changes in neuronal activity occur following a change in brain state, such as may be produced, for example, by a stimulus or task.
 - Population receptive field ([pRF](https://brainlife.io/docs/tutorial/prf-mapping/)) modeling is a popular fMRI method to map the retinotopic organization of the human brain.
-- 
+- [fLoc](https://github.com/VPNL/fLoc) - The use of fMRI scans to first identify brain areas of functional significance and then more closely examine the brain activity in the area is popular in neuroimaging and is known as [functional localization](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9167083/). This approach requires conducting an independent experiment to localize the targeted region for each individual participant.
   
 
 ### NSD
