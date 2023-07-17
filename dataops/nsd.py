@@ -131,3 +131,23 @@ def create_plot(lh_correlation, rh_correlation, data_dir):
   plt.ylabel('Mean Pearson\'s $r$')
   plt.legend(frameon=True, loc=1)
   return lh_mean_roi_correlation, rh_mean_roi_correlation
+
+
+####################
+### fMRI related ###
+####################
+
+def get_roi_class(roi):
+    if roi in ["V1v", "V1d", "V2v", "V2d", "V3v", "V3d", "hV4"]:
+        roi_class = 'prf-visualrois'
+    elif roi in ["EBA", "FBA-1", "FBA-2", "mTL-bodies"]:
+        roi_class = 'floc-bodies'
+    elif roi in ["OFA", "FFA-1", "FFA-2", "mTL-faces", "aTL-faces"]:
+        roi_class = 'floc-faces'
+    elif roi in ["OPA", "PPA", "RSC"]:
+        roi_class = 'floc-places'
+    elif roi in ["OWFA", "VWFA-1", "VWFA-2", "mfs-words", "mTL-words"]:
+        roi_class = 'floc-words'
+    elif roi in ["early", "midventral", "midlateral", "midparietal", "ventral", "lateral", "parietal"]:
+        roi_class = 'streams'
+    return roi_class
