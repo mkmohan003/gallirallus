@@ -32,4 +32,14 @@
   - [Colab tutorial](https://colab.research.google.com/drive/1bLJGP3bAo_hAOwZPHpiSHKlt97X9xsUw?usp=share_link)
   - [Paper](https://arxiv.org/abs/2301.03198)
         
+### Detailed Model summary
+  - You can use [torchinfo](https://github.com/tyleryep/torchinfo) package for this purpose
+    ```
+    import torch
+    from torchinfo import summary
+    res_model = torch.hub.load('pytorch/vision:v0.10.0', 'resnext50_32x4d', pretrained=True)
+    summary(res_model, col_names=["input_size", "output_size", "num_params", "kernel_size"], input_size=(1, 3, 224, 224))
+    ```
+    <img width="929" alt="Screenshot 2023-07-18 at 3 00 53 PM" src="https://github.com/mkmohan003/gallirallus/assets/134788080/e67816cc-21d7-4702-a306-d7e6b8ec677b">
 
+    
