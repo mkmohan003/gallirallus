@@ -9,6 +9,8 @@
   - [Natural scenes Dataset](https://osf.io/zyb3t/wiki/home/) - also contains github link and supplementary videos
   - [Supplementary info](https://www.nature.com/articles/s41593-021-00962-x#Sec55)
   - [Video of raw fMRI scan of subj01](https://osf.io/5sx2p)
+  - [Download data using AWS CLI](https://aws.amazon.com/marketplace/pp/prodview-otyj4ovtx7ypo#resources)
+  - [Browse the data](https://natural-scenes-dataset.s3.amazonaws.com/index.html)
 
 ### Algonaut 2023 challenge
   - Predict neural responses to visual stimuli using Encoding models
