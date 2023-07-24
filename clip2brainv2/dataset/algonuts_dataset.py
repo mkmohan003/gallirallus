@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 from pathlib import Path
 import os
+import clip
 
 from .nsd_annos import NSD_ann
 
@@ -13,11 +14,13 @@ class ArgObj:
     self.subj = format(subj, '02')
     self.data_dir = os.path.join(data_dir, 'subj'+self.subj)
 
-
 class AlgonutsDataset(Dataset):
     def __init__(self, data_dir: str, split: str, load_annotations: bool, 
-                       annotations_path: str = None, nsd_stim_path: str = None):
+                       device: str, annotations_path: str = None, 
+                       nsd_stim_path: str = None, clip_preprocess = None):
         self.load_annotations = load_annotations
+        self.clip_preprocess = clip_preprocess
+        self.device = device 
 
         if split == 'train':
           self.images_dir = Path(os.path.join(data_dir, 'training_split', 'training_images'))
@@ -60,13 +63,18 @@ class AlgonutsDataset(Dataset):
         img_path = self.image_data[idx]
         img = Image.open(img_path).convert('RGB')
         
-        img = self.image_transform(img)
+        if self.clip_preprocess is None:
+          img = self.image_transform(img)
+        else:
+          img = self.clip_preprocess(img).to(self.device)
+
         lh_fmri = torch.from_numpy(self.lh_fmri[idx])
         rh_fmri = torch.from_numpy(self.rh_fmri[idx])
 
         if self.load_annotations:
-           captions = self.annotations.nsd_captions(idx)
-           return img, lh_fmri, rh_fmri
+           captions = self.annotations.nsd_captions(idx)[0] #choose the first caption
+           tokenized_input = clip.tokenize([captions]).squeeze(0).to(self.device)
+           return img, lh_fmri, rh_fmri, tokenized_input
         
         else:
           return img, lh_fmri, rh_fmri
