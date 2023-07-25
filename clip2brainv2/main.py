@@ -73,7 +73,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = ArgumentParser('CLIP2Brain')
-    parser.add_argument('--extract_features', action='store_false')
+    parser.add_argument('--extract_features', action='store_true')
     args = parser.parse_args()
 
     main(args)

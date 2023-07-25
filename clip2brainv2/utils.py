@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 FEATURE_PATH = [
-   'subj01_train_img.npy'
+   'subj01_train_img.npy',
    'subj01_train_caption.npy'
 ]
 
