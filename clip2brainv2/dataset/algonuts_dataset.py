@@ -72,6 +72,7 @@ class AlgonutsDataset(Dataset):
         rh_fmri = torch.from_numpy(self.rh_fmri[idx])
 
         if self.load_annotations:
+           print('retrieving annotations')
            captions = self.annotations.nsd_captions(idx)[0] #choose the first caption
            tokenized_input = clip.tokenize([captions]).squeeze(0).to(self.device)
            return img, lh_fmri, rh_fmri, tokenized_input
