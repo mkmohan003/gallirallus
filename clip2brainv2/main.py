@@ -1,14 +1,18 @@
 from torchvision import models
 from torch.utils.data import DataLoader
 import torch
+from sklearn.linear_model import LinearRegression
 import numpy as np
 import os
 import clip
-import tqdm
 import lzma, pickle
+from argparse import ArgumentParser
+import joblib
+
 
 # from configs import *
-from dataset.algonuts_dataset import AlgonutsDataset, ArgObj
+from dataset.algonuts_dataset import AlgonutsDataset, ArgObj, fmri_data
+from utils import extract_store_features, load_features
 
 
 MAIN_PATH = 'C:/Users/David Palecek/Documents/UAlg/Neuromatch/project/algonauts_2023_tutorial_data/'#'/content/drive/MyDrive/algonauts_2023_tutorial_data/'
@@ -25,8 +29,14 @@ CLIP_AVAL_MODELS = ['RN50',
                     'ViT-L/14',
                     'ViT-L/14@336px']
 
+def build_encoding_model(img_features, lh_fmri, rh_fmri):
+    reg_lh = LinearRegression().fit(img_features, lh_fmri)
+    reg_rh = LinearRegression().fit(img_features, rh_fmri)
 
-def main():
+    return reg_lh, reg_rh
+
+
+def main(args):
     # setup
     print('Setup...')
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -37,36 +47,33 @@ def main():
     model, preprocess = clip.load(model_name, device=device)
 
     # load dataset
-    args = ArgObj(MAIN_PATH, '01')
-    algonuts_train_set = AlgonutsDataset(args.data_dir, 'train', load_annotations=True, device=device, 
+    data_args = ArgObj(MAIN_PATH, '01')
+    lh_fmri, rh_fmri = fmri_data(data_args.data_dir)
+    algonuts_train_set = AlgonutsDataset(data_args.data_dir, 'train', load_annotations=True, device=device, 
                                           clip_preprocess=preprocess, annotations_path=ANNOTATION_PATH, 
                                           nsd_stim_path=NSD_STIM_INFO_PATH)
     algonuts_train_loader = DataLoader(algonuts_train_set, batch_size=1)
 
-    img, lh_fmri, rh_fmri, tokens = next(iter(algonuts_train_loader))
-    # print(tokens)
+    ### img, lh_fmri, rh_fmri, tokens = next(iter(algonuts_train_loader))
 
     # Extract features
-    with torch.no_grad():
+    if args.extract_features:
+        print('Extracting features...')
+        extract_store_features(model, algonuts_train_loader, 'subj01_train')
 
-      features = []
-      for img, _ in iter(algonuts_train_loader):
-         features.append(model.encode_image(img))
-      
-      all_features = np.array(all_features)
-      print('All features shape', all_features.shape)
-      ## I think in case of shuffle data as in algonauts tutorial, saving features at this point is wrong.
-      # Needs to be done after PCA
-      with lzma.open(f'visual_features_{model_name}.npz', 'wb') as f:
-          pickle.dump(all_features, f)
-         
+    print('Loading features...')
+    features = load_features()
 
-      z_t = model.encode_text(tokens)
-      z_i = model.encode_image(img) 
-
-      print(z_t.size())
-      print(z_i.size())
+    # build model
+    print('Building model...')
+    lh_reg, rh_reg = build_encoding_model(features[0], lh_fmri, rh_fmri)
+    joblib.dump(lh_reg, 'lh_reg.pkl')
+    joblib.dump(rh_reg, 'rh_reg.pkl')
 
 
 if __name__ == "__main__":
-    main()
+    parser = ArgumentParser('CLIP2Brain')
+    parser.add_argument('--extract_features', action='store_false')
+    args = parser.parse_args()
+
+    main(args)

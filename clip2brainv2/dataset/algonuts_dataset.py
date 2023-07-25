@@ -25,7 +25,7 @@ class AlgonutsDataset(Dataset):
         if split == 'train':
           self.images_dir = Path(os.path.join(data_dir, 'training_split', 'training_images'))
           self.fmri_dir = Path(os.path.join(data_dir, 'training_split', 'training_fmri'))
-        elif split == 'val':
+        elif split == 'test':
           self.images_dir = Path(os.path.join(data_dir, 'test_split', 'test_images'))
           self.fmri_dir = Path(os.path.join(data_dir, 'test_split', 'test_fmri'))
 
@@ -79,6 +79,14 @@ class AlgonutsDataset(Dataset):
         
         else:
           return img, lh_fmri, rh_fmri
+
+
+def fmri_data(data_dir):
+    fmri_dir = Path(os.path.join(data_dir, 'training_split', 'training_fmri'))
+    lh_fmri = np.load(os.path.join(fmri_dir, 'lh_training_fmri.npy'))
+    rh_fmri = np.load(os.path.join(fmri_dir, 'rh_training_fmri.npy'))
+
+    return lh_fmri, rh_fmri
 
 
 def build_transforms():
