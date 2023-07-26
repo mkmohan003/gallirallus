@@ -112,7 +112,7 @@ class NSD_ann():
         return self.cats
     
     def nsd_captions(self, id):
-        coco_id, split = self.hash_table[id+1]
+        coco_id, split = self.hash_table[id]
         if split == 'train2017':
             captions = [k['caption'] for k in self.coco_caption_train.imgToAnns[coco_id]]
         else:

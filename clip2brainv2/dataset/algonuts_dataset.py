@@ -73,7 +73,7 @@ class AlgonutsDataset(Dataset):
 
         if self.load_annotations:
            print('retrieving annotations')
-           captions = self.annotations.nsd_captions(idx)[0] #choose the first caption
+           captions = self.annotations.nsd_captions(int(str(img_path)[-9:-4]))[0] #choose the first caption
            tokenized_input = clip.tokenize([captions]).squeeze(0).to(self.device)
            return img, lh_fmri, rh_fmri, tokenized_input
         
