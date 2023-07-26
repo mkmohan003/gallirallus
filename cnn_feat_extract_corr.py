@@ -17,6 +17,9 @@ from tqdm import tqdm
 PLATFORM = "local"
 BATCH_SIZE = 100
 RAND_SEED = 5
+FEATURES_TRAIN_TEMPLATE = "features_train_%s_%s.npy"
+FEATURES_VAL_TEMPLATE = "features_val_%s_%s.npy"
+
 if PLATFORM == "colab":
     DATA_DIR = '/content/drive/MyDrive/algonauts_2023_tutorial_data/subj01'
     DEVICE = "cuda:0"
@@ -123,7 +126,7 @@ def extractFeatures(feature_extractor, dataloader, pca, flatten):
     return np.vstack(features)
 
 
-def getModel(model_name):
+def getModelExtractor(model_name, model_layer):
     model = None
     feature_extractor = None
     transform = transforms.Compose([
@@ -133,12 +136,10 @@ def getModel(model_name):
     ])
     if model_name == "alexnet":
         model = torch.hub.load('pytorch/vision:v0.10.0', 'alexnet')
-        model_layer = "features.2"
         feature_extractor = create_feature_extractor(model,
                                                      return_nodes=[model_layer])
     elif model_name == "efficientnet_b0":
         model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
-        model_layer = 'features.3.1.add'
         feature_extractor = create_feature_extractor(model,
                                                      return_nodes=[model_layer])
     elif model_name == "clip":
@@ -213,7 +214,6 @@ def plotCorrelationMap(lh_correlation, rh_correlation, data_dir):
                 lh_roi_correlation.append(lh_correlation[lh_roi_idx])
                 rh_roi_correlation.append(rh_correlation[rh_roi_idx])
 
-    print(f"Overall: L:{lh_correlation.mean()},R:{rh_correlation.mean()}")
     roi_names.append('All vertices')
     lh_roi_correlation.append(lh_correlation)
     rh_roi_correlation.append(rh_correlation)
@@ -236,17 +236,14 @@ def plotCorrelationMap(lh_correlation, rh_correlation, data_dir):
     plt.legend(frameon=True, loc=1)
     plt.show()
 
-    lh_mean_roi_correlation = np.array(lh_mean_roi_correlation)
-    print(f"ROI: L {lh_mean_roi_correlation[~np.isnan(np.array(lh_mean_roi_correlation))].mean()}")
-    rh_mean_roi_correlation = np.array(rh_mean_roi_correlation)
-    print(f"ROI: R {rh_mean_roi_correlation[~np.isnan(rh_mean_roi_correlation)].mean()}")
-
 
 if __name__ == "__main__":
     np.random.seed(RAND_SEED)
-    model_name = "clip"
+    model_name = "alexnet"
+    model_layer = "features.2"
     flatten = False if model_name == "clip" else True
-    model, feature_extractor, transform = getModel(model_name)
+    model, feature_extractor, transform = getModelExtractor(model_name,
+                                                            model_layer)
     if model is not None:
         model.eval()
         model.to(DEVICE)
@@ -254,11 +251,22 @@ if __name__ == "__main__":
                 getImageDataLoader(DATA_DIR, transform)
         lh_fmri_train, rh_fmri_train, lh_fmri_val, rh_fmri_val = \
                 getfMRIData(DATA_DIR, ids_train, ids_val)
-        pca = fitPCA(feature_extractor, train_imgs_loader, flatten)
-        features_train = extractFeatures(feature_extractor, train_imgs_loader,
-                                         pca, flatten)
-        features_val = extractFeatures(feature_extractor, val_imgs_loader,
-                                       pca, flatten)
+        FEATURES_TRAIN_FILE = FEATURES_TRAIN_TEMPLATE % (model_name, model_layer)
+        FEATURES_VAL_FILE = FEATURES_VAL_TEMPLATE % (model_name, model_layer)
+        if os.path.isfile(FEATURES_TRAIN_FILE) and os.path.isfile(FEATURES_VAL_FILE):
+            features_train = np.load(FEATURES_TRAIN_FILE)
+            features_val = np.load(FEATURES_VAL_FILE)
+        else:
+            pca = fitPCA(feature_extractor, train_imgs_loader, flatten)
+            features_train = extractFeatures(feature_extractor,
+                                             train_imgs_loader,
+                                             pca, flatten)
+            features_val = extractFeatures(feature_extractor,
+                                           val_imgs_loader,
+                                           pca, flatten)
+            np.save(FEATURES_TRAIN_FILE, features_train)
+            np.save(FEATURES_VAL_FILE, features_val)
+
         print(f"training image features: {features_train.shape}")
         print(f"validation image features: {features_val.shape}")
         reg_lh, reg_rh = fitEncodingModel(features_train, lh_fmri_train,
@@ -269,4 +277,5 @@ if __name__ == "__main__":
                                                               rh_fmri_val,
                                                               lh_fmri_val_pred,
                                                               rh_fmri_val_pred)
+        print(f"Overall: L:{lh_correlation.mean()},R:{rh_correlation.mean()}")
         plotCorrelationMap(lh_correlation, rh_correlation, DATA_DIR)
