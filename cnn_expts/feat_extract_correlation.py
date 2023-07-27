@@ -215,6 +215,7 @@ def plotCorrelationMap(lh_correlation, rh_correlation, data_dir):
                 rh_roi_correlation.append(rh_correlation[rh_roi_idx])
 
     roi_names.append('All vertices')
+    print(roi_names)
     lh_roi_correlation.append(lh_correlation)
     rh_roi_correlation.append(rh_correlation)
 
@@ -235,12 +236,14 @@ def plotCorrelationMap(lh_correlation, rh_correlation, data_dir):
     plt.ylabel('Mean Pearson\'s $r$')
     plt.legend(frameon=True, loc=1)
     plt.show()
+    return lh_mean_roi_correlation, rh_mean_roi_correlation
 
 
 if __name__ == "__main__":
     np.random.seed(RAND_SEED)
-    model_name = "alexnet"
-    model_layer = "features.2"
+    # model_name = "alexnet"  # "efficientnet_b0"
+    model_name = "clip"
+    model_layer = "visual"  # "features.12"
     flatten = False if model_name == "clip" else True
     model, feature_extractor, transform = getModelExtractor(model_name,
                                                             model_layer)
@@ -278,4 +281,9 @@ if __name__ == "__main__":
                                                               lh_fmri_val_pred,
                                                               rh_fmri_val_pred)
         print(f"Overall: L:{lh_correlation.mean()},R:{rh_correlation.mean()}")
-        plotCorrelationMap(lh_correlation, rh_correlation, DATA_DIR)
+        lh_mean_roi_correlation, rh_mean_roi_correlation = \
+                plotCorrelationMap(lh_correlation, rh_correlation, DATA_DIR)
+        np.save("lh_mean_roi_correlation_%s_%s.npy" % (model_name, model_layer),
+                np.array(lh_mean_roi_correlation))
+        np.save("rh_mean_roi_correlation_%s_%s.npy" % (model_name, model_layer),
+                np.array(rh_mean_roi_correlation))
