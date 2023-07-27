@@ -6,3 +6,5 @@
   - Calculates Correlation between the model predictions and the Ground truth fMRI values.
 
 ```python plot.py``` - Plots as a bar chart of the Correlation between predictions and Ground truth for the different visual regions of the brain.
+
+```python model_info*py``` - Get the layer info of the different Conv Nets.
